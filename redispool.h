@@ -8,23 +8,39 @@
 
 #define MAX_CONNECTION_NUM 10
 
-void redis_pool_init(redisContext **redis_pool) {
-    for (int i = 0; i < MAX_CONNECTION_NUM; i++) {
-        redis_pool[i] = (redisContext*)malloc(sizeof(redisContext));
-        redis_pool[i] = redisConnect("127.0.0.1", 6379);
+redisContext* pool[MAX_CONNECTION_NUM];
+
+static void redispool_init() 
+{
+    printf("redis pool init...\n");
+    for (int i = 0; i < MAX_CONNECTION_NUM; i++) 
+    {
+        pool[i] = redisConnect("127.0.0.1", 6379);
     }
 }
 
-redisContext* getConn(redisContext **redis_pool) {
-    for (int i = 0; i < MAX_CONNECTION_NUM; i++) {
-        if (redis_pool[i] != NULL) {
-            redisContext* c = redis_pool[i];
-            redis_pool[i] = NULL;
+static redisContext* getContext() 
+{
+    for (int i = 0; i < MAX_CONNECTION_NUM; i++) 
+    {
+        if (pool[i] != NULL) 
+        {
+            redisContext* c = pool[i];
+            pool[i] = NULL;
             return c;
         }
     }
 
     return NULL;
+}
+
+static void reidspool_destroy()
+{
+    printf("redis pool destroy...\n");
+    for (int i = 0; i < MAX_CONNECTION_NUM; i++)
+    {
+        redisFree(pool[i]);
+    }
 }
 
 #endif

@@ -2,11 +2,11 @@
 
 int main()
 {
-    redisContext* redis_pool[MAX_CONNECTION_NUM];
-    redis_pool_init(redis_pool);
-    redisContext *c = getConn(redis_pool);
+    
+    redispool_init();
+    redisContext *c = getContext();
 
-    redisReply *reply = redisCommand(c, "auth %s", "your_pin");
+    redisReply *reply = redisCommand(c, "auth %s", "***");
     if (reply->type != REDIS_REPLY_ERROR) {
         printf("success\n");
     }
@@ -14,21 +14,20 @@ int main()
     {
         printf("fail\n");
     }
-    reply = redisCommand(c, "keys %s", "special_key");
+    reply = redisCommand(c, "keys %s", "grp:*:mem");
     if (reply->element == NULL) {
         printf("reply->element == NULL\n");
     }
 
     if (reply->elements == 0) {
-        printf("reply->element == 0\n");
+        printf("reply->elements == 0\n");
     }
     else {
-        printf("reply->element = %zu\n", reply->elements);
+        printf("reply->elements = %zu\n", reply->elements);
     }
     redisReply** replyArr = reply->element;
     int pos = 0;
     while (pos != reply->elements) {
-        /* Create the poc room */
         /* "grp:1234:mem" */
         redisReply *group = *(replyArr + pos);
         char idStr[20] = {'\0'};
@@ -46,6 +45,8 @@ int main()
         printf("room_id %d\n", room_id);
         ++pos;
     }
+
+    reidspool_destroy();
 
     return 0;
 }
